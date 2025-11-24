@@ -5,7 +5,7 @@ import io
 import numpy as np
 
 # ======================== CONFIG ========================
-API_URL = "https://mlops-pipeline-for-image-recognition-2.onrender.com"
+API_URL = "https://mlops-pipeline-for-image-recognition.onrender.com"
 
 st.set_page_config(
     page_title="CIFAR-10 MLOps Dashboard",
