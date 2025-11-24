@@ -16,13 +16,13 @@ app = FastAPI(
     version="1.0"
 )
 
-# HEALTH CHECK
+# ============== HEALTH CHECK ==============
 @app.get("/health")
 def check_health():
     return {"status": "API is running ✔"}
 
 
-# PREDICTION ENDPOINT
+# ============== PREDICTION ENDPOINT ==============
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     content = await file.read()
@@ -30,61 +30,76 @@ async def predict(file: UploadFile = File(...)):
     return result
 
 
-# RETRAINING ENDPOINT (FULLY FIXED)
+# ============== RETRAIN ENDPOINT (FULLY FIXED) ==============
 @app.post("/retrain")
 async def retrain(file: UploadFile = File(...)):
-    # Save ZIP temporarily
+
+    # === Save uploaded ZIP ===
     zip_path = "temp_data.zip"
     with open(zip_path, "wb") as f:
         f.write(await file.read())
 
-    # Extract folder
+    # === Extract ZIP ===
     extract_dir = "new_data"
     if os.path.exists(extract_dir):
         shutil.rmtree(extract_dir)
     os.makedirs(extract_dir)
 
-    # Unzip safely
-    with zipfile.ZipFile(zip_path, "r") as zip_ref:
-        zip_ref.extractall(extract_dir)
+    try:
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(extract_dir)
+    except:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Uploaded file is not a valid ZIP archive."}
+        )
 
     os.remove(zip_path)
 
-    # Load model + class names
+    # === Load model + class names ===
     model = load_model()
     class_names = load_class_names()
 
     images = []
     labels = []
 
-    # Loop through each class folder
+    # === Loop through CIFAR-10 class folders ===
     for class_index, class_name in enumerate(class_names):
+
         class_folder = os.path.join(extract_dir, class_name)
 
-        # Skip missing folders
+        # Skip if folder does not exist
         if not os.path.exists(class_folder):
             continue
 
         files = os.listdir(class_folder)
-
-        # Skip empty folders
         if len(files) == 0:
             continue
 
         for img_file in files:
             img_path = os.path.join(class_folder, img_file)
 
-            # Read image safely
+            # Try reading the image (JPEG fix)
             img = cv2.imread(img_path)
 
-            # Skip unreadable files
+            # If cv2 cannot read normally, try forcing decode
+            if img is None:
+                try:
+                    img = cv2.imdecode(
+                        np.fromfile(img_path, dtype=np.uint8),
+                        cv2.IMREAD_COLOR
+                    )
+                except:
+                    img = None
+
+            # Skip if still unreadable
             if img is None:
                 continue
 
+            # Resize securely
             try:
                 img = cv2.resize(img, (32, 32))
             except:
-                # skip images cv2 cannot resize
                 continue
 
             img = img.astype("float32") / 255.0
@@ -92,20 +107,21 @@ async def retrain(file: UploadFile = File(...)):
             images.append(img)
             labels.append(class_index)
 
-    # Convert to numpy
+    # === Check if any images were usable ===
     if len(images) == 0:
         return JSONResponse(
             status_code=400,
-            content={"error": "No valid images found in uploaded ZIP. Ensure correct folder structure."}
+            content={"error": "No valid images found in ZIP. Ensure structure: class_name/image.jpg"}
         )
 
+    # Convert lists to numpy arrays
     images = np.array(images)
     labels = np.array(labels)
 
-    # Retrain the model
+    # === Retrain the model (light fine-tuning) ===
     model.fit(images, labels, epochs=3, verbose=1)
 
-    # Save updated model
+    # === Save the updated model ===
     model.save("models/cifar10_model.h5")
 
     return {"status": "Retrained and model updated successfully!"}
