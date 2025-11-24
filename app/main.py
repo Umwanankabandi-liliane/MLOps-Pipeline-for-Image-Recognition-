@@ -1,4 +1,11 @@
 # app/main.py
+
+# ===================== IMPORTANT FIX FOR RETRAINING =====================
+import tensorflow as tf
+tf.config.run_functions_eagerly(True)
+tf.compat.v1.enable_eager_execution()
+# ========================================================================
+
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
 from src.prediction import predict_image
@@ -8,7 +15,6 @@ import zipfile
 from src.model import load_model, load_class_names
 import numpy as np
 import cv2
-import tensorflow as tf
 
 app = FastAPI(
     title="CIFAR-10 MLOps API",
@@ -16,13 +22,14 @@ app = FastAPI(
     version="1.0"
 )
 
-# ============== HEALTH CHECK ==============
+
+# ====================== HEALTH CHECK ======================
 @app.get("/health")
 def check_health():
     return {"status": "API is running ✔"}
 
 
-# ============== PREDICTION ENDPOINT ==============
+# ====================== PREDICTION ENDPOINT ======================
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     content = await file.read()
@@ -30,16 +37,16 @@ async def predict(file: UploadFile = File(...)):
     return result
 
 
-# ============== RETRAIN ENDPOINT (FULLY FIXED) ==============
+# ====================== RETRAIN ENDPOINT ======================
 @app.post("/retrain")
 async def retrain(file: UploadFile = File(...)):
 
-    # === Save uploaded ZIP ===
+    # --- Save uploaded ZIP ---
     zip_path = "temp_data.zip"
     with open(zip_path, "wb") as f:
         f.write(await file.read())
 
-    # === Extract ZIP ===
+    # --- Extract ZIP ---
     extract_dir = "new_data"
     if os.path.exists(extract_dir):
         shutil.rmtree(extract_dir)
@@ -56,19 +63,18 @@ async def retrain(file: UploadFile = File(...)):
 
     os.remove(zip_path)
 
-    # === Load model + class names ===
+    # --- Load model + class names ---
     model = load_model()
     class_names = load_class_names()
 
     images = []
     labels = []
 
-    # === Loop through CIFAR-10 class folders ===
+    # --- Loop through CIFAR-10 class folders ---
     for class_index, class_name in enumerate(class_names):
 
         class_folder = os.path.join(extract_dir, class_name)
 
-        # Skip if folder does not exist
         if not os.path.exists(class_folder):
             continue
 
@@ -79,10 +85,8 @@ async def retrain(file: UploadFile = File(...)):
         for img_file in files:
             img_path = os.path.join(class_folder, img_file)
 
-            # Try reading the image (JPEG fix)
             img = cv2.imread(img_path)
 
-            # If cv2 cannot read normally, try forcing decode
             if img is None:
                 try:
                     img = cv2.imdecode(
@@ -92,11 +96,9 @@ async def retrain(file: UploadFile = File(...)):
                 except:
                     img = None
 
-            # Skip if still unreadable
             if img is None:
                 continue
 
-            # Resize securely
             try:
                 img = cv2.resize(img, (32, 32))
             except:
@@ -107,21 +109,20 @@ async def retrain(file: UploadFile = File(...)):
             images.append(img)
             labels.append(class_index)
 
-    # === Check if any images were usable ===
+    # --- Validate loaded images ---
     if len(images) == 0:
         return JSONResponse(
             status_code=400,
             content={"error": "No valid images found in ZIP. Ensure structure: class_name/image.jpg"}
         )
 
-    # Convert lists to numpy arrays
     images = np.array(images)
     labels = np.array(labels)
 
-    # === Retrain the model (light fine-tuning) ===
+    # --- Retrain model ---
     model.fit(images, labels, epochs=3, verbose=1)
 
-    # === Save the updated model ===
+    # --- Save updated model ---
     model.save("models/cifar10_model.h5")
 
     return {"status": "Retrained and model updated successfully!"}
