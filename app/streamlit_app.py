@@ -3,6 +3,7 @@ import requests
 from PIL import Image
 import io
 import numpy as np
+import time
 
 # ======================== CONFIG ========================
 API_URL = "https://mlops-pipeline-for-image-recognition.onrender.com"
@@ -128,18 +129,29 @@ data/
             st.markdown("<div class='error-box'>❌ Retraining failed. Check ZIP structure.</div>", unsafe_allow_html=True)
 
 # =========================================================
-#                      HEALTH CHECK TAB
+#                      HEALTH CHECK TAB (with RETRY)
 # =========================================================
 with tab3:
     st.markdown("<div class='section-header'>📡 API Health Check</div>", unsafe_allow_html=True)
 
     if st.button("Check API Status"):
         try:
-            response = requests.get(f"{API_URL}/health")
+            st.write("⏳ Checking API... (retrying for 25 seconds)")
 
-            if response.status_code == 200:
-                st.success(f"🟢 API is Live → {response.json()}")
-            else:
-                st.error("🔴 API is unreachable.")
-        except:
+            success = False
+            for attempt in range(5):    # retry 5 times
+                response = requests.get(f"{API_URL}/health")
+
+                if response.status_code == 200:
+                    st.success(f"🟢 API is Live → {response.json()}")
+                    success = True
+                    break
+
+                time.sleep(5)   # wait before retry
+
+            if not success:
+                st.error("🔴 API is unreachable after 5 retries.")
+
+        except Exception as e:
             st.error("❌ API is not reachable. Service may be down.")
+            st.error(str(e))
