@@ -21,6 +21,7 @@ app = FastAPI(
 def check_health():
     return {"status": "API is running ✔"}
 
+
 # PREDICTION ENDPOINT
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
@@ -28,22 +29,23 @@ async def predict(file: UploadFile = File(...)):
     result = predict_image(content)
     return result
 
-# RETRAINING ENDPOINT
+
+# RETRAINING ENDPOINT (FULLY FIXED)
 @app.post("/retrain")
 async def retrain(file: UploadFile = File(...)):
-
     # Save ZIP temporarily
     zip_path = "temp_data.zip"
     with open(zip_path, "wb") as f:
         f.write(await file.read())
 
-    # Extract
-    extract_dir = "new_data/"
+    # Extract folder
+    extract_dir = "new_data"
     if os.path.exists(extract_dir):
         shutil.rmtree(extract_dir)
     os.makedirs(extract_dir)
 
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+    # Unzip safely
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(extract_dir)
 
     os.remove(zip_path)
@@ -55,24 +57,55 @@ async def retrain(file: UploadFile = File(...)):
     images = []
     labels = []
 
-    # Load uploaded images for retraining
+    # Loop through each class folder
     for class_index, class_name in enumerate(class_names):
         class_folder = os.path.join(extract_dir, class_name)
-        if os.path.exists(class_folder):
-            for img_file in os.listdir(class_folder):
-                img_path = os.path.join(class_folder, img_file)
-                img = cv2.imread(img_path)
-                img = cv2.resize(img, (32,32))
-                images.append(img / 255.0)
-                labels.append(class_index)
+
+        # Skip missing folders
+        if not os.path.exists(class_folder):
+            continue
+
+        files = os.listdir(class_folder)
+
+        # Skip empty folders
+        if len(files) == 0:
+            continue
+
+        for img_file in files:
+            img_path = os.path.join(class_folder, img_file)
+
+            # Read image safely
+            img = cv2.imread(img_path)
+
+            # Skip unreadable files
+            if img is None:
+                continue
+
+            try:
+                img = cv2.resize(img, (32, 32))
+            except:
+                # skip images cv2 cannot resize
+                continue
+
+            img = img.astype("float32") / 255.0
+
+            images.append(img)
+            labels.append(class_index)
+
+    # Convert to numpy
+    if len(images) == 0:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "No valid images found in uploaded ZIP. Ensure correct folder structure."}
+        )
 
     images = np.array(images)
     labels = np.array(labels)
 
-    # Retrain for 3 epochs
-    model.fit(images, labels, epochs=3)
+    # Retrain the model
+    model.fit(images, labels, epochs=3, verbose=1)
 
-    # Save model
+    # Save updated model
     model.save("models/cifar10_model.h5")
 
     return {"status": "Retrained and model updated successfully!"}
