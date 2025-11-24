@@ -1,71 +1,182 @@
-# CIFAR10-Image-MLOps-Pipeline
+# MLOps Pipeline for Image Recognition
 
-This project implements a full MLOps pipeline using the CIFAR-10 image dataset.  
-It demonstrates:
+## 1. Project Overview
 
-✔ Model training  
-✔ Evaluation  
-✔ Prediction  
-✔ Retraining using new data  
-✔ FastAPI backend  
-✔ Streamlit User Interface  
-✔ Cloud deployment with Docker + Render  
-✔ Load testing with Locust  
+This project implements a complete MLOps pipeline for an image classification model trained on the CIFAR-10 dataset.
+The solution demonstrates the full lifecycle of a machine learning system, including preprocessing, model training, deployment, monitoring, retraining, and load testing.
 
----
+The final system consists of:
 
-## 1. Project Structure
+* A TensorFlow/Keras CNN model trained on CIFAR-10.
+* A FastAPI backend providing prediction and retraining endpoints.
+* A Streamlit dashboard for interacting with the model.
+* A retraining pipeline allowing model updates using new data.
+* A Locust load-test to measure the API’s performance under stress.
+* A fully documented Jupyter notebook demonstrating all preprocessing and training steps.
 
-project/
-│── app/
-│     ├── main.py
-│     ├── streamlit_app.py
-│
-│── src/
-│     ├── preprocessing.py
-│     ├── model.py
-│     ├── prediction.py
-│
-│── notebook/
-│     ├── train_model.ipynb
-│     ├── retrain_model.ipynb
-│
-│── models/
-│     ├── cifar10_model.h5
-│     ├── class_names.json
-│
-│── Dockerfile
-│── requirements.txt
-│── locustfile.py
-│── README.md
 
----
 
-## 2. How to Run Locally
 
-### Install dependencies:
+  ## 2. Live Application URLs
+
+### FastAPI Backend
+
+Base URL:
+https://mlops-pipeline-for-image-recognition.onrender.com
+
+
+
+Available endpoints:
+
+* `/predict` — Image prediction
+* `/retrain` — Model retraining
+* `/health` — Health check
+
+### Streamlit Dashboard
+
+User interface for prediction and retraining:
+https://kvbxjbosjedmcytvxsf5tu.streamlit.app/
+
+
+## 3. How to Set Up Locally
+
+### Install dependencies
+
+
 pip install -r requirements.txt
 
-### Start API:
-uvicorn app.main:app --reload
 
-### Start Streamlit UI:
+### Run the API
+
+
+uvicorn app.main:app --reload
+```
+
+### Run the Streamlit UI
+
+
 streamlit run app/streamlit_app.py
 
----
 
-## 3. Deployment
 
-The application is containerized using Docker and deployed on Render.
+## 4. API Endpoints
 
----
+### 4.1 Prediction Endpoint
 
-## 4. Video Demo
-🎥 YouTube Link: (paste)
 
----
+POST /predict
 
-## 5. Team Features
-- Upload new data
-- Trigger retraining
-- Predict images using the model
+
+Input:
+
+* Image file (`.jpg`, `.jpeg`, `.png`)
+
+Output:
+
+* Predicted class
+* Confidence score
+
+### 4.2 Retraining Endpoint
+
+
+POST /retrain
+
+
+Input:
+A ZIP file structured as:
+
+
+airplane/
+automobile/
+bird/
+cat/
+deer/
+dog/
+frog/
+horse/
+ship/
+truck/
+
+
+Output:
+
+* Confirmation of successful retraining
+
+### 4.3 Health Check
+
+
+GET /health
+
+
+
+
+## 5. Locust Load Test Results
+
+Locust was used to simulate concurrent API requests to evaluate performance during high-traffic conditions.
+
+### Test Configuration
+
+* 5 users
+* Spawn rate: 2 users/second
+* Endpoint tested: `/predict`
+* File used: `test_image.jpg`
+
+### Results Summary
+
+* All requests reached the FastAPI service successfully.
+* Average response latency remained stable under load.
+* The API handled multiple concurrent requests without timeout.
+
+A screenshot and logs from the Locust test are included in the `/locust_results` directory (or attached in the report submission).
+
+
+
+## 6. Model File
+
+The trained model is saved in:
+
+
+models/cifar10_model.h5
+
+
+This file is used by the FastAPI backend for inference and retraining.
+
+
+
+## 7. Video Demo 
+
+A full walkthrough demonstrating:
+
+* Notebook preprocessing
+* Model training
+* API deployment
+* Streamlit usage
+* Retraining workflow
+* Locust performance testing
+
+YouTube link:
+(Add your link after uploading the video)
+
+
+
+## 8. How to Retrain the Model with New Data
+
+1. Prepare a folder with CIFAR-10-style subfolders.
+2. Zip the folder:
+
+
+new_data.zip
+
+
+3. Upload zip file through:
+
+* Streamlit UI
+  or
+* POST request to `/retrain`
+
+The backend retrains the model for 3 epochs and updates the saved weights.
+
+
+
+
+
