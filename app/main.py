@@ -119,6 +119,14 @@ async def retrain(file: UploadFile = File(...)):
     images = np.array(images)
     labels = np.array(labels)
 
+    # ⭐⭐⭐ VERY IMPORTANT FIX ⭐⭐⭐
+    # Recompile the model to avoid optimizer variable mismatch
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(),
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"]
+    )
+
     # --- Retrain model ---
     model.fit(images, labels, epochs=3, verbose=1)
 
