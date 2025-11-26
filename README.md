@@ -21,7 +21,7 @@ The final system consists of:
 ### FastAPI Backend
 
 Base URL:
-[https://mlops-pipeline-for-image-recognition.onrender.com](https://mlops-pipeline-for-image-recognition.onrender.com)
+https://mlops-pipeline-for-image-recognition.onrender.com/docs
 
 Available endpoints:
 
