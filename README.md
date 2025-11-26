@@ -17,7 +17,7 @@ The final system consists of:
 
 
 
-  ## 2. Live Application URLs
+## 2. Live Application URLs
 
 ### FastAPI Backend
 
@@ -127,7 +127,8 @@ Locust was used to simulate concurrent API requests to evaluate performance duri
 * Average response latency remained stable under load.
 * The API handled multiple concurrent requests without timeout.
 
-A screenshot and logs from the Locust test are included in the `/locust_results` directory (or attached in the report submission).
+here is the link of the screenshot:https://github.com/Umwanankabandi-liliane/MLOps-Pipeline-for-Image-Recognition-/blob/main/images/locust%20image.png
+
 
 
 
@@ -154,8 +155,8 @@ A full walkthrough demonstrating:
 * Retraining workflow
 * Locust performance testing
 
-YouTube link:
-(Add your link after uploading the video)
+YouTube link:https://youtu.be/zAsy5dmX5kY
+
 
 
 
