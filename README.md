@@ -16,15 +16,12 @@ The final system consists of:
 
 
 
-
 ## 2. Live Application URLs
 
 ### FastAPI Backend
 
 Base URL:
-https://mlops-pipeline-for-image-recognition.onrender.com
-
-
+[https://mlops-pipeline-for-image-recognition.onrender.com](https://mlops-pipeline-for-image-recognition.onrender.com)
 
 Available endpoints:
 
@@ -36,6 +33,7 @@ Available endpoints:
 
 User interface for prediction and retraining:
 https://kvbxjbosjedmcytvxsf5tu.streamlit.app/
+
 
 
 ## 3. How to Set Up Locally
@@ -50,7 +48,7 @@ pip install -r requirements.txt
 
 
 uvicorn app.main:app --reload
-```
+
 
 ### Run the Streamlit UI
 
@@ -59,13 +57,12 @@ streamlit run app/streamlit_app.py
 
 
 
+
 ## 4. API Endpoints
 
 ### 4.1 Prediction Endpoint
 
-
-POST /predict
-
+`POST /predict`
 
 Input:
 
@@ -78,14 +75,12 @@ Output:
 
 ### 4.2 Retraining Endpoint
 
-
-POST /retrain
-
+`POST /retrain`
 
 Input:
 A ZIP file structured as:
 
-
+```
 airplane/
 automobile/
 bird/
@@ -104,9 +99,7 @@ Output:
 
 ### 4.3 Health Check
 
-
-GET /health
-
+`GET /health`
 
 
 
@@ -127,9 +120,9 @@ Locust was used to simulate concurrent API requests to evaluate performance duri
 * Average response latency remained stable under load.
 * The API handled multiple concurrent requests without timeout.
 
-here is the link of the screenshot:https://github.com/Umwanankabandi-liliane/MLOps-Pipeline-for-Image-Recognition-/blob/main/images/locust%20image.png
+### Load Test Screenshot (click below)
 
-
+https://github.com/Umwanankabandi-liliane/MLOps-Pipeline-for-Image-Recognition-/blob/main/images/locust%20image.png
 
 
 ## 6. Model File
@@ -144,7 +137,7 @@ This file is used by the FastAPI backend for inference and retraining.
 
 
 
-## 7. Video Demo 
+## 7. Video Demo
 
 A full walkthrough demonstrating:
 
@@ -155,8 +148,8 @@ A full walkthrough demonstrating:
 * Retraining workflow
 * Locust performance testing
 
-YouTube link:https://youtu.be/zAsy5dmX5kY
-
+YouTube link:
+https://youtu.be/zAsy5dmX5kY
 
 
 
@@ -169,14 +162,13 @@ YouTube link:https://youtu.be/zAsy5dmX5kY
 new_data.zip
 
 
-3. Upload zip file through:
+3. Upload the ZIP file through:
 
 * Streamlit UI
   or
 * POST request to `/retrain`
 
 The backend retrains the model for 3 epochs and updates the saved weights.
-
 
 
 
