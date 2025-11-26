@@ -73,14 +73,15 @@ Output:
 * Predicted class
 * Confidence score
 
-### 4.2 Retraining Endpoint
 
-`POST /retrain`
+
+## 4.2 Retraining Endpoint
+
+POST /retrain
 
 Input:
 A ZIP file structured as:
 
-```
 airplane/
 automobile/
 bird/
@@ -92,14 +93,12 @@ horse/
 ship/
 truck/
 
-
 Output:
-
-* Confirmation of successful retraining
+Confirmation of successful retraining
 
 ### 4.3 Health Check
 
-`GET /health`
+GET /health
 
 
 
@@ -109,29 +108,27 @@ Locust was used to simulate concurrent API requests to evaluate performance duri
 
 ### Test Configuration
 
-* 5 users
-* Spawn rate: 2 users/second
-* Endpoint tested: `/predict`
-* File used: `test_image.jpg`
+• 5 users
+• Spawn rate: 2 users/second
+• Endpoint tested: /predict
+• File used: test_image.jpg
 
 ### Results Summary
 
-* All requests reached the FastAPI service successfully.
-* Average response latency remained stable under load.
-* The API handled multiple concurrent requests without timeout.
+• All requests reached the FastAPI service successfully.
+• Average response latency remained stable under load.
+• The API handled multiple concurrent requests without timeout.
 
 ### Load Test Screenshot (click below)
 
 https://github.com/Umwanankabandi-liliane/MLOps-Pipeline-for-Image-Recognition-/blob/main/images/locust%20image.png
 
 
+
 ## 6. Model File
 
 The trained model is saved in:
-
-
 models/cifar10_model.h5
-
 
 This file is used by the FastAPI backend for inference and retraining.
 
@@ -141,12 +138,12 @@ This file is used by the FastAPI backend for inference and retraining.
 
 A full walkthrough demonstrating:
 
-* Notebook preprocessing
-* Model training
-* API deployment
-* Streamlit usage
-* Retraining workflow
-* Locust performance testing
+• Notebook preprocessing
+• Model training
+• API deployment
+• Streamlit usage
+• Retraining workflow
+• Locust performance testing
 
 YouTube link:
 https://youtu.be/zAsy5dmX5kY
@@ -156,20 +153,14 @@ https://youtu.be/zAsy5dmX5kY
 ## 8. How to Retrain the Model with New Data
 
 1. Prepare a folder with CIFAR-10-style subfolders.
-2. Zip the folder:
-
-
-new_data.zip
-
-
+2. Zip the folder named:
+   new_data.zip
 3. Upload the ZIP file through:
 
-* Streamlit UI
-  or
-* POST request to `/retrain`
+• Streamlit UI
+or
+• POST request to /retrain
 
 The backend retrains the model for 3 epochs and updates the saved weights.
-
-
 
 
